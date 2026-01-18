@@ -1,32 +1,140 @@
-# Netflix-Data-Analysis-Using-SQL-
-Analyzed 15 business questions using SQL on Netflix's dataset. Discovered the distribution of 5,000+ movies vs. TV shows and identified the most common ratings. Examined content release patterns by year and predicted future trends. Tools Used: SQL
-Objectives
-Analyze the distribution of content types (movies vs TV shows).
-Identify the most common ratings for movies and TV shows.
-List and analyze content based on release years, countries, and durations.
-Explore and categorize content based on specific criteria and keywords.
-Dataset
-The data for this project is sourced from the Kaggle dataset:
+# Retail Sales Analysis SQL Project
 
-Dataset Link: https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download
+This project focuses on analyzing retail sales data using SQL to extract meaningful business insights. The objective is to demonstrate practical SQL skills such as data retrieval, aggregation, filtering, grouping, and time-based analysis, which are commonly used by data analysts in real-world scenarios.
 
- Business Problems 
+*Retail Sales SQL Analysis – Questions*
 
-1. Count the number of Movies vs TV Shows
-2. Find the most common rating for movies and TV shows
-3. List all movies released in a specific year (e.g., 2020)
-4. Find the top 5 countries with the most content on Netflix
-5. Identify the longest movie
-6. Find content added in the last 5 years
-7. Find all the movies/TV shows by director 'Rajiv Chilaka'!
-8. List all TV shows with more than 5 seasons
-9. Count the number of content items in each genre
-10.Find each year and the average numbers of content release in India on netflix. 
-return top 5 year with highest avg content release!
-11. List all movies that are documentaries
-12. Find all content without a director
-13. Find how many movies actor 'Salman Khan' appeared in last 10 years!
-14. Find the top 10 actors who have appeared in the highest number of movies produced in India.
-15. Categorize the content based on the presence of the keywords 'kill' and 'violence' in 
-the description field. Label content containing these keywords as 'Bad' and all other 
-content as 'Good'. Count how many items fall into each category.
+1. Write a SQL query to retrieve all columns for sales made on 2022-11-05.
+
+2. Write a SQL query to retrieve all transactions where:
+Category is Clothing
+Quantity sold is more than 4
+Sale occurred in November 2022
+
+3. Write a SQL query to calculate the total sales (total_sale) for each category.
+
+4. Write a SQL query to find the average age of customers who purchased items from the Beauty category.
+
+5. Write a SQL query to find all transactions where the total sale value is greater than 1000.
+
+6. Write a SQL query to find the total number of transactions made by each gender in each category.
+
+7. Write a SQL query to calculate the average sale for each month.
+
+8. Write a SQL query to find the top 5 customers based on the highest total sales.
+
+9. Write a SQL query to find the number of unique customers who purchased items from each category.
+
+10. Write a SQL query to classify sales into shifts and count the number of orders in each shift:
+
+Morning: Before 12 PM
+Afternoon: Between 12 PM and 5 PM
+Evening: After 5 PM
+
+11. Write a SQL query to calculate the average monthly sales and identify the best-selling month for each year.
+
+solutions - 
+
+CREATE TABLE retail_sales
+            (
+                transaction_id INT PRIMARY KEY,	
+                sale_date DATE,	 
+                sale_time TIME,	
+                customer_id	INT,
+                gender	VARCHAR(15),
+                age	INT,
+                category VARCHAR(15),	
+                quantity	INT,
+                price_per_unit FLOAT,	
+                cogs	FLOAT,
+                total_sale FLOAT
+            );
+
+select * from retail_sales;
+
+-- 1. Write a SQL query to retrieve all columns for sales made on '2022-11-05:
+select * from retail_sales
+where 
+	sale_date = '2022-11-05' ;
+
+-- 2. Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022:
+SELECT *
+FROM retail_sales
+WHERE category = 'Clothing'
+  AND quantity >= 4
+  AND sale_date BETWEEN '2022-11-01' AND '2022-11-30';
+
+-- 3. Write a SQL query to calculate the total sales (total_sale) for each category.
+SELECT category,
+	SUM (total_sale) AS total_sales 
+FROM retail_sales	
+GROUP BY category; 
+
+-- 4. Write a SQL query to find the average age of customers who purchased items from the 'Beauty' category.
+select * from retail_sales;
+SELECT category,
+	AVG(age) as avg_age from retail_sales
+where category = 'Beauty'
+GROUP BY category;
+
+-- 5. Write a SQL query to find all transactions where the total_sale is greater than 1000.
+select * from retail_sales
+where total_sale > 1000 ;
+
+-- 6. Write a SQL query to find the total number of transactions (transaction_id) made by each gender in each category.
+SELECT 
+    gender,
+    category,
+    COUNT(transactions_id) AS total_transactions
+FROM retail_sales
+GROUP BY gender, category;
+
+-- 7. Write a SQL query to calculate the average sale for each month. Find out best selling month in each year.
+SELECT 
+    EXTRACT(MONTH FROM sale_date) AS month,
+    AVG(total_sale) AS avg_sale
+FROM retail_sales
+GROUP BY EXTRACT(MONTH FROM sale_date);
+
+-- 8 Write a SQL query to find the top 5 customers based on the highest total sales
+select customer_id, sum(total_sale) as total_sales from retail_sales
+group by customer_id 
+order by total_sales desc
+limit 5;
+
+-- 9 Write a SQL query to find the number of unique customers who purchased items from each category.
+SELECT 
+    category,
+    COUNT(DISTINCT customer_id) AS unique_customers
+FROM retail_sales
+GROUP BY category;
+
+-- 10. Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17):
+WITH hourly_sale
+AS
+(
+SELECT *,
+    CASE
+        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
+        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+        ELSE 'Evening'
+    END as shift
+FROM retail_sales
+)
+SELECT 
+    shift,
+    COUNT(*) as total_orders    
+FROM hourly_sale
+GROUP BY shift
+
+
+-- 11. Write a SQL query to calculate the average sale for each month. Find out best selling month in each year.
+SELECT 
+    EXTRACT(YEAR FROM sale_date) AS year,
+    EXTRACT(MONTH FROM sale_date) AS month,
+    AVG(total_sale) AS avg_sale
+FROM retail_sales
+GROUP BY 
+    EXTRACT(YEAR FROM sale_date),
+    EXTRACT(MONTH FROM sale_date)
+ORDER BY year, month;
